@@ -116,6 +116,7 @@ export default function DoctorDigestRecorder({ familyId }: { familyId: string })
           <button
             onClick={startRecording}
             disabled={isProcessing}
+            aria-label="Start recording"
             className="rounded-full w-14 h-14 bg-[var(--sage-600)] text-white flex items-center justify-center hover:bg-[var(--sage-700)] disabled:opacity-50 transition-all shadow-md hover:shadow-lg active:scale-95"
           >
             <Mic className="w-6 h-6" />
@@ -123,6 +124,7 @@ export default function DoctorDigestRecorder({ familyId }: { familyId: string })
         ) : (
           <button
             onClick={stopRecording}
+            aria-label="Stop recording"
             className="rounded-full w-14 h-14 bg-red-500 text-white flex items-center justify-center shadow-md animate-pulse"
           >
             <Square className="w-5 h-5" />

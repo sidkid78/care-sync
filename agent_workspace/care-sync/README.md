@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CareSync
 
-## Getting Started
+**CareSync** is a modern, AI-powered family caregiving application designed to coordinate care for seniors. It bridges the gap between family members, caregivers, and medical professionals with features like automated medical digests, medication tracking, and a shared family feed.
 
-First, run the development server:
+## ✨ Features
+
+- **👨‍👩‍👧‍👦 Family Management**: Create or join family circles to coordinate care within a secure, invite-only group.
+- **🎙️ Doctor Digest**: Record doctor visits and let our AI (powered by Google Gemini) automatically transcribe, summarize, and extract actionable tasks.
+- **💊 Med Scanner**: Manage and track medications (context implied).
+- **👴 Senior Mode**: A simplified, high-contrast interface designed specifically for seniors to easily view their schedule and updates.
+- **📅 Shared Calendar & Shifts**: Coordinate care shifts among family members (General, Medical, Social, Rest, Admin).
+- **💬 Family Feed**: A real-time activity stream for updates, completed tasks, and "vibe checks".
+- **🔐 Secure Vault**: Store sensitive documents with zero-knowledge encryption headers.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+  - *Design Specs*: Custom "Warm Clinical" palette (Sage, Clay, Blush, Lavender) with glassmorphism and micro-interactions.
+- **Backend & Auth**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Realtime)
+- **AI**: [Google Gemini API](https://ai.google.dev/) (Multimodal processing)
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** (v18+ recommended)
+- **npm** or **yarn** or **pnpm**
+- A **Supabase** project
+- A **Google Cloud Console** project with Gemini API enabled
+
+### Installation
+
+1. **Clone the repository**:
+
+    ```bash
+    git clone https://github.com/your-username/care-sync.git
+    cd care-sync
+    ```
+
+2. **Install dependencies**:
+
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
+
+3. **Environment Setup**:
+    Create a `.env.local` file in the root directory and add the following variables:
+
+    ```env
+    # Supabase Configuration
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+    # Google Gemini AI Configuration
+    GOOGLE_GENAI_API_KEY=your_gemini_api_key
+    ```
+
+4. **Database Migration**:
+    Ensure your Supabase database schema is up to date. You can find migration files in `supabase/migrations`.
+
+### Running the App
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+care-sync/
+├── app/                  # Next.js App Router (Pages & API Routes)
+│   ├── actions/          # Server Actions
+│   ├── api/              # API Routes (doctor-digest, etc.)
+│   ├── dashboard/        # Main Dashboard Page
+│   ├── onboarding/       # User Onboarding Flow
+│   ├── senior/           # Senior Mode Interface
+│   └── ...
+├── components/           # Reusable React Components
+│   ├── ai/               # AI-specific components (Recorder, etc.)
+│   └── ...
+├── lib/                  # Library code (utils, constants)
+├── supabase/             # Supabase configurations & migrations
+│   └── migrations/       # SQL Migration files
+├── utils/                # Utility functions
+│   └── supabase/         # Supabase client/server connection helpers
+└── public/               # Static assets
+```
 
-## Learn More
+## 🎨 Design System
 
-To learn more about Next.js, take a look at the following resources:
+CareSync uses a custom "Warm Clinical" design system defined in `app/globals.css`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Sage (`--sage-*`)**: Primary brand color, representing health and calm.
+- **Clay (`--clay-*`)**: Neutral backgrounds, representing warmth and stability.
+- **Blush (`--blush-*`)**: Accents for urgency or warmth.
+- **Lavender (`--lav-*`)**: Used for AI-related features and magic moments.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📄 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
