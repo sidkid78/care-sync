@@ -662,6 +662,7 @@ function DashboardView() {
                   <button
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
                     style={{ background: 'var(--clay-100)' }}
+                    aria-label="Add shift"
                   >
                     <Plus size={14} style={{ color: 'var(--clay-600)' }} />
                   </button>
