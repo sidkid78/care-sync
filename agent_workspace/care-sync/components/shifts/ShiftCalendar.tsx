@@ -210,18 +210,17 @@ export default function ShiftCalendar({ familyId, members }: Props) {
           <Loader2 className="w-6 h-6 animate-spin text-[var(--sage-500)]" />
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-1.5">
           {days.map((day) => {
             const dayShifts = shiftsByDay(day);
             const today = isToday(day);
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[140px] rounded-xl border p-2 transition-colors ${
-                  today
-                    ? 'border-[var(--sage-400)] bg-[var(--sage-50)]'
-                    : 'border-[var(--clay-200)] bg-white hover:border-[var(--clay-300)]'
-                }`}
+                className={`min-h-[100px] md:min-h-[140px] rounded-xl border p-2 transition-colors ${today
+                  ? 'border-[var(--sage-400)] bg-[var(--sage-50)]'
+                  : 'border-[var(--clay-200)] bg-white dark:bg-[var(--clay-100)] hover:border-[var(--clay-300)]'
+                  }`}
               >
                 {/* Day header */}
                 <div className="flex items-center justify-between mb-2">
@@ -230,9 +229,8 @@ export default function ShiftCalendar({ familyId, members }: Props) {
                       {format(day, 'EEE')}
                     </span>
                     <div
-                      className={`text-lg font-semibold leading-tight ${
-                        today ? 'text-[var(--sage-700)]' : 'text-[var(--clay-800)]'
-                      }`}
+                      className={`text-lg font-semibold leading-tight ${today ? 'text-[var(--sage-700)]' : 'text-[var(--clay-800)]'
+                        }`}
                     >
                       {format(day, 'd')}
                     </div>
@@ -251,9 +249,8 @@ export default function ShiftCalendar({ familyId, members }: Props) {
                   {dayShifts.map((s) => (
                     <div
                       key={s.id}
-                      className={`group relative p-1.5 rounded-md border text-[10px] leading-tight ${
-                        SHIFT_COLOR_MAP[s.shift_type] || SHIFT_COLOR_MAP.general
-                      }`}
+                      className={`group relative p-1.5 rounded-md border text-[10px] leading-tight ${SHIFT_COLOR_MAP[s.shift_type] || SHIFT_COLOR_MAP.general
+                        }`}
                     >
                       <div className="font-semibold truncate pr-4">{s.title}</div>
                       <div className="opacity-70">
@@ -269,7 +266,7 @@ export default function ShiftCalendar({ familyId, members }: Props) {
                       <button
                         onClick={() => handleDelete(s.id)}
                         disabled={deleting === s.id}
-                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 w-4 h-4 flex items-center justify-center rounded bg-white/80 text-red-500 hover:text-red-700 transition-all"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 w-4 h-4 flex items-center justify-center rounded bg-white/80 dark:bg-[var(--clay-200)]/80 text-red-500 hover:text-red-700 transition-all"
                       >
                         {deleting === s.id ? (
                           <Loader2 className="w-2.5 h-2.5 animate-spin" />
@@ -284,124 +281,126 @@ export default function ShiftCalendar({ familyId, members }: Props) {
             );
           })}
         </div>
-      )}
+      )
+      }
 
       {/* Create Shift Modal */}
-      {showForm && selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="card-warm p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-[var(--clay-900)]">
-                New Shift — {format(selectedDate, 'EEE, MMM d')}
-              </h3>
-              <button
-                onClick={() => setShowForm(false)}
-                className="p-1.5 text-[var(--clay-400)] hover:text-[var(--clay-600)] rounded-lg hover:bg-[var(--clay-100)]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              {/* Title */}
-              <input
-                type="text"
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="Shift title (e.g., Morning checkup)"
-                required
-                className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] placeholder:text-[var(--clay-300)]"
-              />
-
-              {/* Type chips */}
-              <div className="flex flex-wrap gap-1.5">
-                {SHIFT_TYPES.map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setFormType(t.value)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-                      formType === t.value
-                        ? t.color + ' ring-2 ring-offset-1 ring-[var(--sage-400)]'
-                        : 'bg-white border-[var(--clay-200)] text-[var(--clay-500)] hover:border-[var(--clay-300)]'
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Time row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">Start</label>
-                  <select
-                    value={formStartHour}
-                    onChange={(e) => setFormStartHour(e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
-                  >
-                    {HOURS.map((h) => (
-                      <option key={h} value={h}>
-                        {format(set(new Date(), { hours: h, minutes: 0 }), 'h:mm a')}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">End</label>
-                  <select
-                    value={formEndHour}
-                    onChange={(e) => setFormEndHour(e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
-                  >
-                    {HOURS.map((h) => (
-                      <option key={h} value={h}>
-                        {format(set(new Date(), { hours: h, minutes: 0 }), 'h:mm a')}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Assign to */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">Assign to</label>
-                <select
-                  value={formAssignee}
-                  onChange={(e) => setFormAssignee(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
+      {
+        showForm && selectedDate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="card-warm p-6 max-w-md w-full space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-[var(--clay-900)]">
+                  New Shift — {format(selectedDate, 'EEE, MMM d')}
+                </h3>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="p-1.5 text-[var(--clay-400)] hover:text-[var(--clay-600)] rounded-lg hover:bg-[var(--clay-100)]"
                 >
-                  <option value="">Unassigned</option>
-                  {members.map((m) => (
-                    <option key={m.profile_id} value={m.profile_id}>
-                      {m.profiles?.full_name || 'Unknown'}
-                    </option>
-                  ))}
-                </select>
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Description */}
-              <textarea
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Notes (optional)"
-                rows={2}
-                className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] placeholder:text-[var(--clay-300)] resize-none"
-              />
+              <form onSubmit={handleCreate} className="space-y-3">
+                {/* Title */}
+                <input
+                  type="text"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="Shift title (e.g., Morning checkup)"
+                  required
+                  className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-50)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] placeholder:text-[var(--clay-300)]"
+                />
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full py-2.5 bg-[var(--sage-600)] text-white rounded-xl font-medium text-sm hover:bg-[var(--sage-700)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
-                Create Shift
-              </button>
-            </form>
+                {/* Type chips */}
+                <div className="flex flex-wrap gap-1.5">
+                  {SHIFT_TYPES.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setFormType(t.value)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${formType === t.value
+                        ? t.color + ' ring-2 ring-offset-1 ring-[var(--sage-400)]'
+                        : 'bg-white dark:bg-[var(--clay-50)] border-[var(--clay-200)] text-[var(--clay-500)] hover:border-[var(--clay-300)]'
+                        }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Time row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">Start</label>
+                    <select
+                      value={formStartHour}
+                      onChange={(e) => setFormStartHour(e.target.value)}
+                      className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-50)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
+                    >
+                      {HOURS.map((h) => (
+                        <option key={h} value={h}>
+                          {format(set(new Date(), { hours: h, minutes: 0 }), 'h:mm a')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">End</label>
+                    <select
+                      value={formEndHour}
+                      onChange={(e) => setFormEndHour(e.target.value)}
+                      className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-50)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
+                    >
+                      {HOURS.map((h) => (
+                        <option key={h} value={h}>
+                          {format(set(new Date(), { hours: h, minutes: 0 }), 'h:mm a')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Assign to */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-[var(--clay-500)] uppercase tracking-wide">Assign to</label>
+                  <select
+                    value={formAssignee}
+                    onChange={(e) => setFormAssignee(e.target.value)}
+                    className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-50)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)]"
+                  >
+                    <option value="">Unassigned</option>
+                    {members.map((m) => (
+                      <option key={m.profile_id} value={m.profile_id}>
+                        {m.profiles?.full_name || 'Unknown'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Description */}
+                <textarea
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="Notes (optional)"
+                  rows={2}
+                  className="w-full px-3 py-2 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-50)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] placeholder:text-[var(--clay-300)] resize-none"
+                />
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-full py-2.5 bg-[var(--sage-600)] text-white rounded-xl font-medium text-sm hover:bg-[var(--sage-700)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+                  Create Shift
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

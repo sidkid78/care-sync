@@ -57,7 +57,7 @@ export default function LandingPage() {
 
           {/* Headline */}
           <h1
-            className="text-6xl md:text-7xl leading-[1.05] tracking-tight mb-6"
+            className="text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight mb-6"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--clay-900)' }}
           >
             Care that stays{' '}
@@ -136,10 +136,10 @@ export default function LandingPage() {
         </div>
 
         {/* ─── HERO VISUAL: FLOATING CARDS ─── */}
-        <div className="relative mt-20 max-w-4xl mx-auto h-[340px]">
+        <div className="relative mt-12 md:mt-20 max-w-4xl mx-auto h-auto md:h-[340px] flex flex-col md:block gap-4">
           {/* Doctor Digest Card */}
           <div
-            className="card-warm absolute left-0 top-0 w-[320px] p-5 animate-float"
+            className="card-warm relative md:absolute left-0 top-0 w-full md:w-[320px] p-5 animate-float"
             style={{ animationDelay: '0s' }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -180,7 +180,7 @@ export default function LandingPage() {
 
           {/* Med Scanner Card */}
           <div
-            className="card-warm absolute right-0 top-8 w-[300px] p-5 animate-float"
+            className="card-warm relative md:absolute right-0 top-8 w-full md:w-[300px] p-5 animate-float"
             style={{ animationDelay: '2s' }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -221,7 +221,7 @@ export default function LandingPage() {
 
           {/* Vault Card */}
           <div
-            className="card-warm absolute left-1/2 -translate-x-1/2 bottom-0 w-[280px] p-5 animate-float"
+            className="card-warm relative md:absolute left-1/2 md:-translate-x-1/2 bottom-0 w-full md:w-[280px] p-5 animate-float"
             style={{ animationDelay: '4s' }}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -281,7 +281,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 stagger">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger">
             {[
               {
                 icon: Mic,
@@ -376,7 +376,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Free */}
           <div className="card-warm p-8">
             <p className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--clay-400)' }}>

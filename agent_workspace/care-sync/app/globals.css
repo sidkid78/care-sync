@@ -73,6 +73,40 @@
   --font-mono: 'Berkeley Mono', 'JetBrains Mono', monospace;
 }
 
+.dark {
+  /* Dark Mode Palette - Inverted Clay Tones */
+  --clay-50: #0c1a14;   /* Almost black background */
+  --clay-100: #14221c;
+  --clay-200: #1f332a;  /* Dark borders */
+  --clay-300: #2d453a;
+  --clay-400: #6b8276;  /* Muted text */
+  --clay-500: #8ba396;
+  --clay-600: #abc0b4;
+  --clay-700: #cbd9d0;
+  --clay-800: #e3ebe6;
+  --clay-900: #f0f7f4;  /* Primary text (light) */
+
+  /* Sage adjustments for dark mode - slightly brighter/cleaner */
+  --sage-50: #0f2e20;
+  --sage-100: #164430;
+  --sage-200: #1d5a40;
+  --sage-400: #328c65; /* Brighter accent */
+
+  /* Lavender adjustments */
+  --lav-50: #211638;
+  --lav-100: #37245c;
+  --lav-200: #4d3280;
+  --lav-600: #9a7bce; /* Brighter */
+
+  /* Semantic Overrides */
+  --background: var(--clay-50);
+  --foreground: var(--clay-900);
+  --card: var(--clay-100);
+  --card-hover: #1a2a24;
+  --border: var(--clay-200);
+  --muted: var(--clay-400);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

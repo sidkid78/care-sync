@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import DoctorDigestRecorder from '@/components/ai/DoctorDigestRecorder';
 import MedScanner from '@/components/ai/MedScanner';
 import ShiftCalendar from '@/components/shifts/ShiftCalendar';
+import VaultExplorer from '@/components/vault/VaultExplorer';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
   Heart,
   Calendar,
@@ -277,7 +279,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[var(--clay-50)]">
       {/* Top Bar */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[var(--clay-200)]">
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-[var(--clay-50)]/80 backdrop-blur-md border-b border-[var(--clay-200)]">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[var(--sage-400)] to-[var(--sage-600)] rounded-xl flex items-center justify-center">
@@ -294,7 +296,7 @@ export default function DashboardPage() {
               {members.slice(0, 4).map((m) => (
                 <div
                   key={m.profile_id}
-                  className="w-7 h-7 rounded-full bg-[var(--sage-200)] border-2 border-white flex items-center justify-center text-xs font-semibold text-[var(--sage-700)]"
+                  className="w-7 h-7 rounded-full bg-[var(--sage-200)] border-2 border-white dark:border-[var(--clay-100)] flex items-center justify-center text-xs font-semibold text-[var(--sage-700)]"
                   title={m.profiles?.full_name || 'Member'}
                 >
                   {(m.profiles?.full_name || '?')[0]}
@@ -312,14 +314,14 @@ export default function DashboardPage() {
               title="Copy invite code"
             >
               {codeCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-              <span className="font-mono">{family?.invite_code}</span>
+              <span className="font-mono hidden md:inline">{family?.invite_code}</span>
             </button>
             <button
               onClick={() => router.push('/senior')}
-              className="text-xs text-[var(--clay-400)] hover:text-[var(--clay-600)] px-2 py-1 rounded-md hover:bg-[var(--clay-100)] transition-colors"
+              className="text-xs text-[var(--clay-400)] hover:text-[var(--clay-600)] px-2 py-1 rounded-md hover:bg-[var(--clay-100)] transition-colors flex items-center gap-1"
               title="Senior Mode"
             >
-              👴 Senior
+              <span className="text-lg">👴</span> <span className="hidden md:inline">Senior</span>
             </button>
             <button
               onClick={handleSignOut}
@@ -328,23 +330,23 @@ export default function DashboardPage() {
             >
               <LogOut className="w-4 h-4" />
             </button>
+            <ThemeToggle />
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="max-w-5xl mx-auto px-4 flex gap-1 -mb-px">
+        <div className="max-w-5xl mx-auto px-4 flex gap-1 -mb-px overflow-x-auto no-scrollbar">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors border-b-2 ${
-                activeTab === t.id
-                  ? 'border-[var(--sage-600)] text-[var(--sage-700)] bg-white'
-                  : 'border-transparent text-[var(--clay-400)] hover:text-[var(--clay-600)]'
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors border-b-2 ${activeTab === t.id
+                ? 'border-[var(--sage-600)] text-[var(--sage-700)] bg-white dark:bg-[var(--clay-100)] dark:text-[var(--sage-400)]'
+                : 'border-transparent text-[var(--clay-400)] hover:text-[var(--clay-600)]'
+                }`}
             >
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
+              <t.icon className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">{t.label}</span>
             </button>
           ))}
         </div>
@@ -373,11 +375,11 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={s.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-l-4 bg-white ${SHIFT_COLORS[s.shift_type] || SHIFT_COLORS.general}`}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-l-4 bg-white dark:bg-[var(--clay-100)] ${SHIFT_COLORS[s.shift_type] || SHIFT_COLORS.general}`}
                       >
                         <div className="text-center w-12 shrink-0">
                           <div className="text-xs font-bold text-[var(--clay-500)] uppercase">{dayLabel}</div>
-                          <div className="text-lg font-semibold text-[var(--clay-800)]">{format(start, 'd')}</div>
+                          <div className="text-lg font-semibold text-[var(--clay-800)] dark:text-[var(--clay-900)]">{format(start, 'd')}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[var(--clay-800)] truncate">{s.title}</p>
@@ -406,9 +408,8 @@ export default function DashboardPage() {
                   {consultations.map((c) => (
                     <div key={c.id} className="card-warm p-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          c.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                        }`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                          }`}>
                           {c.status}
                         </span>
                         <span className="text-xs text-[var(--clay-400)]">{format(new Date(c.created_at), 'MMM d, h:mm a')}</span>
@@ -419,11 +420,10 @@ export default function DashboardPage() {
                           {c.action_items.map((a, i) => (
                             <span
                               key={i}
-                              className={`text-xs px-2 py-0.5 rounded-md border ${
-                                a.priority === 'high' ? 'bg-red-50 border-red-200 text-red-700' :
+                              className={`text-xs px-2 py-0.5 rounded-md border ${a.priority === 'high' ? 'bg-red-50 border-red-200 text-red-700' :
                                 a.priority === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                                'bg-emerald-50 border-emerald-200 text-emerald-700'
-                              }`}
+                                  'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                }`}
                             >
                               {a.task}
                             </span>
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
                   placeholder="Share an update with your family…"
-                  className="flex-1 px-4 py-2.5 border border-[var(--clay-200)] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] transition-all placeholder:text-[var(--clay-300)]"
+                  className="flex-1 px-4 py-2.5 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-100)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] transition-all placeholder:text-[var(--clay-300)]"
                 />
                 <button
                   type="submit"
@@ -521,26 +521,9 @@ export default function DashboardPage() {
         )}
 
         {/* ─── Vault Tab ─── */}
-        {activeTab === 'vault' && (
+        {activeTab === 'vault' && family && (
           <section>
-            <div className="card-warm p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[var(--lav-100)] rounded-xl flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-[var(--lav-600)]" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-[var(--clay-900)]">Zero-Knowledge Vault</h2>
-                  <p className="text-sm text-[var(--clay-400)]">Files are encrypted on your device. We never see your data.</p>
-                </div>
-              </div>
-              <p className="text-sm text-[var(--clay-500)] bg-[var(--lav-50)] p-3 rounded-lg border border-[var(--lav-200)]">
-                🔒 AES-256-GCM encryption with PBKDF2 key derivation (600,000 iterations).
-                Your files are encrypted before they leave your browser.
-              </p>
-              <div className="text-center text-sm text-[var(--clay-400)] py-4">
-                Vault UI coming soon — encryption engine is production-ready.
-              </div>
-            </div>
+            <VaultExplorer familyId={family.id} />
           </section>
         )}
       </main>

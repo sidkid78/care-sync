@@ -3,8 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 import { GoogleGenAI } from '@google/genai';
 
 function getAI() {
-  const key = process.env.GOOGLE_GENAI_API_KEY;
-  if (!key) throw new Error('GOOGLE_GENAI_API_KEY is not configured');
+  const key = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY (or GOOGLE_GENAI_API_KEY) is not configured');
   return new GoogleGenAI({ apiKey: key });
 }
 
@@ -43,13 +43,8 @@ Return ONLY valid JSON with this structure:
     const result = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: 'audio/webm', data: base64Audio } },
-          ],
-        },
+        { role: 'user', parts: [{ text: prompt }] },
+        { role: 'user', parts: [{ inlineData: { mimeType: 'audio/webm', data: base64Audio } }] }
       ],
       config: {
         responseMimeType: 'application/json',
