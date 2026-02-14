@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 
 export async function checkSubscription(userId: string): Promise<boolean> {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     try {
         const { data: profile, error } = await supabase

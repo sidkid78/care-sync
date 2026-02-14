@@ -21,12 +21,12 @@ export async function POST(req: Request) {
     }
 
     const session = event.data.object as Stripe.Checkout.Session;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     if (event.type === 'checkout.session.completed') {
         const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
-        );
+        ) as any;
 
         if (!session.metadata?.userId) {
             return new NextResponse('User ID is missing from metadata', { status: 400 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     if (event.type === 'invoice.payment_succeeded') {
         const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
-        );
+        ) as any;
 
         // This event might not have metadata directly, so we might need to look up customer
         // But for simplicity/MVP, checkout.session.completed handles the initial upgrade

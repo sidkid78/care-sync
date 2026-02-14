@@ -6,7 +6,7 @@ const SUBSCRIPTION_PRICE_ID = 'price_1Q...'; // Placeholder - needs actual price
 
 export async function POST(req: Request) {
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const {
             data: { user },
         } = await supabase.auth.getUser();
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
             customer: customerId,
             line_items: [
                 {
-                    price: 'price_1PigB5L67890', // Replace with valid Price ID or env var
+                    price: process.env.STRIPE_PRICE_ID, // Use env var for price ID
                     quantity: 1,
                 },
             ],
