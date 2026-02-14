@@ -36,7 +36,7 @@
 1. **Clone the repository**:
 
     ```bash
-    git clone https://github.com/your-username/care-sync.git
+    git clone https://github.com/sidkid78/care-sync.git
     cd care-sync
     ```
 
