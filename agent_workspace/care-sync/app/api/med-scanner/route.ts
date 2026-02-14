@@ -34,12 +34,19 @@ const responseSchema = {
   required: ['medicationName', 'potentialConflicts', 'recommendation', 'disclaimer'],
 };
 
+import { checkSubscription } from '@/lib/subscription';
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if (userError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const isPremium = await checkSubscription(user.id);
+  if (!isPremium) {
+    return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
   }
 
   try {

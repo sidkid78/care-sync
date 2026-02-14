@@ -259,6 +259,21 @@ export default function DashboardPage() {
     setTimeout(() => setCodeCopied(false), 2000);
   };
 
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch('/api/stripe/checkout', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Failed to start checkout');
+      }
+    } catch (e) {
+      console.error('Upgrade failed', e);
+      alert('Upgrade failed');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--clay-50)]">
@@ -330,6 +345,16 @@ export default function DashboardPage() {
             >
               <LogOut className="w-4 h-4" />
             </button>
+
+            {profile?.subscription_status === 'free' && (
+              <button
+                onClick={handleUpgrade}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-200 to-amber-400 text-amber-900 text-xs font-bold rounded-full hover:shadow-md transition-all"
+              >
+                <span className="text-xs">✨</span> Upgrade
+              </button>
+            )}
+
             <ThemeToggle />
           </div>
         </div>
@@ -497,7 +522,24 @@ export default function DashboardPage() {
         {/* ─── Doctor Digest Tab ─── */}
         {activeTab === 'digest' && family && (
           <section>
-            <div className="card-warm p-5 space-y-4">
+            <div className="card-warm p-5 space-y-4 relative overflow-hidden">
+              {profile?.subscription_status === 'free' && (
+                <div className="absolute inset-0 z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                  <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+                    <Lock className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--clay-900)]">Premium Check-up</h3>
+                  <p className="text-sm text-[var(--clay-600)] max-w-xs mb-4">
+                    Doctor Digest uses advanced AI to summarize health consultations. Upgrade to unlock this feature.
+                  </p>
+                  <button
+                    onClick={handleUpgrade}
+                    className="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Unlock for $9.99/mo
+                  </button>
+                </div>
+              )}
               <div>
                 <h2 className="text-lg font-semibold text-[var(--clay-900)]">Doctor Digest</h2>
                 <p className="text-sm text-[var(--clay-400)]">Record a consultation — Gemini extracts a summary and action items.</p>
@@ -510,7 +552,24 @@ export default function DashboardPage() {
         {/* ─── Med Scanner Tab ─── */}
         {activeTab === 'scanner' && (
           <section>
-            <div className="card-warm p-5 space-y-4">
+            <div className="card-warm p-5 space-y-4 relative overflow-hidden">
+              {profile?.subscription_status === 'free' && (
+                <div className="absolute inset-0 z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                  <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+                    <Lock className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--clay-900)]">Safety First</h3>
+                  <p className="text-sm text-[var(--clay-600)] max-w-xs mb-4">
+                    Instant AI drug interaction checks for your family's safety. Upgrade to unlock Med-Cabinet Scanner.
+                  </p>
+                  <button
+                    onClick={handleUpgrade}
+                    className="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Unlock Scanner
+                  </button>
+                </div>
+              )}
               <div>
                 <h2 className="text-lg font-semibold text-[var(--clay-900)]">Med-Cabinet Scanner</h2>
                 <p className="text-sm text-[var(--clay-400)]">Scan a medication label to check for drug interactions.</p>
