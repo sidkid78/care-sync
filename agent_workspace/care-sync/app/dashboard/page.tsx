@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import DoctorDigestRecorder from '@/components/ai/DoctorDigestRecorder';
 import MedScanner from '@/components/ai/MedScanner';
 import ShiftCalendar from '@/components/shifts/ShiftCalendar';
@@ -27,6 +28,7 @@ import {
   Camera,
   Lock,
   Send,
+  BookOpen,
 } from 'lucide-react';
 import { format, isToday, isTomorrow, startOfWeek, addDays } from 'date-fns';
 
@@ -123,6 +125,33 @@ export default function DashboardPage() {
       .single();
 
     setProfile(prof);
+
+    // If success=true and status is still free, poll for update
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true' && prof?.subscription_status === 'free') {
+      // Simple polling mechanism
+      let attempts = 0;
+      const maxAttempts = 10;
+      const interval = setInterval(async () => {
+        attempts++;
+        const { data: updatedProf } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (updatedProf?.subscription_status === 'premium') {
+          setProfile(updatedProf);
+          clearInterval(interval);
+          // Remove query param to clean URL
+          router.replace('/dashboard');
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }, 2000); // Check every 2 seconds
+
+      return () => clearInterval(interval);
+    }
 
     // Family membership
     const { data: membership } = await supabase
@@ -356,6 +385,15 @@ export default function DashboardPage() {
             )}
 
             <ThemeToggle />
+
+            <Link
+              href="/educational1.html"
+              className="p-2 text-[var(--clay-400)] hover:text-[var(--clay-600)] rounded-lg hover:bg-[var(--clay-100)] transition-colors"
+              title="System Architecture Docs"
+              target="_blank"
+            >
+              <BookOpen className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 

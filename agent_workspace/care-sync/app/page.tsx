@@ -466,6 +466,11 @@ export default function LandingPage() {
           </span>
         </div>
         <p>Built with compassion. Protected by cryptography.</p>
+        <div className="mt-4">
+          <Link href="/educational1.html" className="text-xs hover:text-sage-600 underline underline-offset-4">
+            System Architecture
+          </Link>
+        </div>
       </footer>
     </div>
   );

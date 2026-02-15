@@ -11,6 +11,7 @@
 - **📅 Shared Calendar & Shifts**: Coordinate care shifts among family members (General, Medical, Social, Rest, Admin).
 - **💬 Family Feed**: A real-time activity stream for updates, completed tasks, and "vibe checks".
 - **🔐 Secure Vault**: Store sensitive documents with zero-knowledge encryption headers.
+- **💳 Premium Subscriptions**: Unlock advanced AI features with secure monthly billing via Stripe.
 
 ## 🛠️ Tech Stack
 
@@ -20,6 +21,7 @@
   - *Design Specs*: Custom "Warm Clinical" palette (Sage, Clay, Blush, Lavender) with glassmorphism and micro-interactions.
 - **Backend & Auth**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Realtime)
 - **AI**: [Google Gemini API](https://ai.google.dev/) (Multimodal processing)
+- **Payments**: [Stripe](https://stripe.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ## 🚀 Getting Started
@@ -60,6 +62,13 @@
 
     # Google Gemini AI Configuration
     GOOGLE_GENAI_API_KEY=your_gemini_api_key
+
+    # Stripe Payment Configuration
+    STRIPE_SECRET_KEY=your_stripe_secret_key
+    STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+    STRIPE_PRICE_ID=your_stripe_price_id
+    NEXT_PUBLIC_BASE_URL=http://localhost:3000
     ```
 
 4. **Database Migration**:

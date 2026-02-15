@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care-Sync</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f1014;
+      --text-light: #f3f4f6;
+      --accent-gold: #d4af37;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      margin: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* SVG Filters Classes */
+    .noise-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      filter: url(#static-noise);
+      opacity: 0.15;
+      mix-blend-mode: overlay;
+      z-index: 10;
+    }
+
+    /* Scroll Snap / Layout */
+    .scrolly-container {
+      position: relative;
+    }
+
+    .sticky-image {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      object-fit: cover;
+      z-index: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .content-block {
+      position: relative;
+      z-index: 20;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+      /* To allow seeing bg */
+      background: linear-gradient(to bottom, rgba(15, 16, 20, 0.8) 0%, rgba(15, 16, 20, 0.4) 50%, rgba(15, 16, 20, 0.9) 100%);
+      backdrop-filter: blur(4px);
+      margin-bottom: 20vh;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Animations */
+    .reveal-text {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-text.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Specialized Motion Blur Entry */
+    .motion-blur-entry.active {
+      animation: slideUpBlur 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes slideUpBlur {
+      0% {
+        opacity: 0;
+        transform: translateY(60px);
+        filter: url(#vertical-blur);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: none;
+      }
+    }
+
+    /* Glitch Text Effect for 'Crisis' */
+    .glitch-text {
+      position: relative;
+      color: white;
+    }
+
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--bg-dark);
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .glitch-text.active::after {
+      left: -2px;
+      text-shadow: -1px 0 red;
+      animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch-anim-1 {
+      0% {
+        clip: rect(20px, 9999px, 10px, 0);
+      }
+
+      20% {
+        clip: rect(60px, 9999px, 80px, 0);
+      }
+
+      40% {
+        clip: rect(10px, 9999px, 90px, 0);
+      }
+
+      100% {
+        clip: rect(40px, 9999px, 20px, 0);
+      }
+    }
+
+    /* Utility */
+    .text-highlight {
+      color: var(--accent-gold);
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SVG DEFINITIONS -->
+  <svg style="display: none;">
+    <defs>
+      <!-- 1. ANIMATED NOISE: For Background Texture -->
+      <filter id="static-noise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch">
+          <animate attributeName="seed" values="0;100" dur="1s" repeatCount="indefinite" />
+        </feTurbulence>
+        <feColorMatrix type="saturate" values="0" />
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="0.5" />
+        </feComponentTransfer>
+      </filter>
+
+      <!-- 2. DYNAMIC MOTION BLUR: Vertical Streak -->
+      <filter id="vertical-blur">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0 15" />
+      </filter>
+
+      <!-- 3. LIQUID/DISTORTION: For Tech Section -->
+      <filter id="liquid-distort">
+        <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="2" result="turbulence">
+          <animate attributeName="baseFrequency" values="0.02;0.03;0.02" dur="5s" repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="10" />
+      </filter>
+    </defs>
+  </svg>
+
+  <main class="scrolly-container">
+
+    <!-- SECTION 1: THE CRISIS -->
+    <div class="section-wrapper relative">
+      <img src="./images/scene-1 (12).jpg"
+        class="sticky-image fixed inset-0 w-full h-full object-cover opacity-60 grayscale" id="bg-1"
+        alt="Exhausted Caregiver">
+      <div class="noise-overlay"></div>
+
+      <div class="content-block">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 glitch-text leading-tight"
+          data-text="The End of the Caregiver’s Quiet Crisis">
+          The End of the Caregiver’s <br>Quiet Crisis
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 reveal-text">
+          There is a silent exhaustion that lives in the "Sandwich Generation."
+        </p>
+        <div class="prose prose-invert max-w-none text-lg text-gray-300 reveal-text delay-200">
+          <p class="mb-4">It’s the weight of being the CEO of two households—one growing up, and one growing old. It’s
+            the stack of medical folders on the kitchen counter, the frantic texts to siblings about who’s taking Dad to
+            dialysis, and the crushing guilt of forgetting a single pill.</p>
+          <p class="border-l-4 border-yellow-600 pl-4 italic">For the 35-to-55-year-old caregiver, the "cognitive load"
+            isn't a buzzword; it’s a slow-motion burnout that robs them of their presence and their peace.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: THE SANCTUARY -->
+    <div class="section-wrapper relative">
+      <img src="./images/scene-2 (13).jpg" class="sticky-image fixed inset-0 w-full h-full object-cover hidden"
+        id="bg-2" alt="Doctor Consultation">
+
+      <div class="content-block">
+        <h2 class="text-4xl md:text-6xl font-serif mb-8 motion-blur-entry">
+          Care-Sync was not built to be another "app" on your phone. <span class="text-highlight">It was built to be a
+            sanctuary.</span>
+        </h2>
+        <div class="text-lg md:text-xl text-gray-200 space-y-6 reveal-text">
+          <p>We believe that when you are in a high-pressure oncology consultation, you shouldn't have to worry about
+            taking perfect notes.</p>
+          <div class="bg-white/10 p-6 rounded-lg backdrop-blur-md border border-white/20">
+            <strong class="block text-white text-2xl mb-2 font-serif">Doctor Digest</strong>
+            <p>Our technology hears what you hear, translating complex medical jargon into a simple, actionable plan
+              before you’ve even left the parking lot.</p>
+          </div>
+          <p>We believe that your family’s most vulnerable moments shouldn’t be training data for a tech giant’s AI—so
+            we built a "Vault" with client-side encryption so powerful that even we can’t see what’s inside.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: THE TECH -->
+    <div class="section-wrapper relative">
+      <img src="./images/scene-3 (11).jpg" class="sticky-image fixed inset-0 w-full h-full object-cover hidden"
+        id="bg-3" alt="Secure Tech Stack">
+
+      <div class="content-block">
+        <h2 class="text-4xl font-bold mb-6 text-cyan-400" style="filter: url(#liquid-distort);">The Tech is the Servant,
+          Not the Master.</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 reveal-text">
+          <div>
+            <p class="mb-4">To ensure this sanctuary never fails, we’ve anchored Care-Sync in a military-grade
+              architectural stack. We use Next.js and Supabase not for the sake of modern tech, but because a caregiver
+              in a hospital basement needs real-time reliability that never lags.</p>
+          </div>
+          <div class="border-t-2 border-cyan-500 pt-4">
+            <p>Our "Agentic AI" doesn't just store data; it proactively scans for dangerous drug interactions using
+              Google Cloud Vision, acting as a second pair of eyes when you are too tired to see straight.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: HUMAN CONNECTION -->
+    <div class="section-wrapper relative">
+      <img src="./images/scene-4 (10).jpg" class="sticky-image fixed inset-0 w-full h-full object-cover hidden"
+        id="bg-4" alt="Human Connection">
+
+      <div class="content-block"
+        style="background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); justify-content: flex-end; padding-bottom: 10vh;">
+        <h2 class="text-4xl md:text-5xl font-serif mb-6 reveal-text">Restoring the Human Connection.</h2>
+        <p class="text-xl mb-8 reveal-text max-w-2xl">
+          Caregiving is an act of love, but it has become an act of administration. Care-Sync automates the friction—the
+          scheduling, the summaries, the meds, and the "Who’s On Duty?" alerts—so that you can stop being a project
+          manager and start being a daughter, a son, or a parent again.
+        </p>
+        <p class="text-lg mb-12 text-gray-400 reveal-text">
+          We have built the world’s most secure, AI-powered care ecosystem because we believe the people holding
+          families together shouldn't have to fall apart.
+        </p>
+        <div class="text-center mt-12 p-8 border border-white/30 rounded-full motion-blur-entry">
+          <h3 class="text-3xl font-serif italic text-white">Care-Sync: Care for them. Peace for you.</h3>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Vanilla JS for Scroll Sequencing and Animation Triggers
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // 1. Intersection Observer for Text Animations
+      const observerOptions = {
+        threshold: 0.15,
+        rootMargin: "0px 0px -100px 0px"
+      };
+
+      const textObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal-text, .motion-blur-entry, .glitch-text').forEach(el => {
+        textObserver.observe(el);
+      });
+
+      // 2. Background Image Switching based on Scroll Position
+      const bgImages = [
+        document.getElementById('bg-1'),
+        document.getElementById('bg-2'),
+        document.getElementById('bg-3'),
+        document.getElementById('bg-4')
+      ];
+
+      const contentBlocks = document.querySelectorAll('.content-block');
+
+      // Observer for switching backgrounds
+      const bgObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Identify which section index this is
+            const index = Array.from(contentBlocks).indexOf(entry.target);
+
+            // Hide all backgrounds, Show current
+            bgImages.forEach(img => img.classList.add('hidden'));
+            if (bgImages[index]) {
+              bgImages[index].classList.remove('hidden');
+              // Special animation for entry
+              bgImages[index].animate([
+                { transform: 'scale(1.1)', filter: 'blur(5px)' },
+                { transform: 'scale(1)', filter: 'blur(0px)' }
+              ], {
+                duration: 1500,
+                easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+                fill: 'forwards'
+              });
+            }
+          }
+        });
+      }, { threshold: 0.5 }); // Trigger when 50% of the section is visible
+
+      contentBlocks.forEach(block => bgObserver.observe(block));
+    });
+  </script>
+
+</body>
+
+</html>

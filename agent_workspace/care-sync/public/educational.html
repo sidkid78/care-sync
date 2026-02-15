@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care-Sync: The Weight of Silence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --sage: #9CAF88;
+      --clay: #C27A59;
+      --blush: #EBCBC4;
+      --lavender: #C8BFE7;
+      --dark: #2c2c2c;
+      --paper: #f9f7f2;
+    }
+
+    body {
+      background-color: var(--paper);
+      color: var(--dark);
+      font-family: 'Georgia', serif;
+      overflow-x: hidden;
+      margin: 0;
+    }
+
+    .sans {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .mono {
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* SVG Filter Application Classes */
+    .filter-grain {
+      filter: url(#grain);
+      opacity: 0.4;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      mix-blend-mode: multiply;
+    }
+
+    .filter-blur-anim {
+      filter: url(#motion-blur);
+    }
+
+    .filter-liquid {
+      filter: url(#liquid);
+    }
+
+    .filter-distress {
+      filter: url(#distress);
+    }
+
+    /* Scroll Snap & Layout */
+    .scroll-container {
+      scroll-snap-type: y mandatory;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-behavior: smooth;
+    }
+
+    section {
+      scroll-snap-align: start;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    /* Animation States */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s ease-out;
+    }
+
+    section.in-view .reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    section.in-view .delay-1 {
+      transition-delay: 0.2s;
+    }
+
+    section.in-view .delay-2 {
+      transition-delay: 0.4s;
+    }
+
+    section.in-view .delay-3 {
+      transition-delay: 0.6s;
+    }
+
+    /* Custom Styles */
+    .card-frame {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    }
+
+    .text-shadow-sm {
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Image Styling */
+    .img-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+
+    section.in-view .img-cover {
+      opacity: 1;
+    }
+
+    .gradient-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: linear-gradient(to top, var(--paper) 10%, rgba(249, 247, 242, 0.8) 50%, rgba(249, 247, 242, 0.4) 100%);
+    }
+
+    .scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--sage);
+      box-shadow: 0 0 10px var(--sage);
+      animation: scan 3s infinite linear;
+      opacity: 0.7;
+    }
+
+    @keyframes scan {
+      0% {
+        top: 0;
+      }
+
+      50% {
+        top: 100%;
+      }
+
+      100% {
+        top: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SVG Filters Definition -->
+  <svg style="display: none;">
+    <defs>
+      <!-- Grain for Texture -->
+      <filter id="grain">
+        <feTurbulence type="fractalNoise" baseFrequency="0.80" numOctaves="3" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+
+      <!-- Cinematic Motion Blur (Animated via JS logic or SMIL) -->
+      <filter id="motion-blur">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0,0">
+          <animate attributeName="stdDeviation" values="0,15; 0,0" dur="1s" begin="indefinite" fill="freeze"
+            id="anim-blur" />
+        </feGaussianBlur>
+      </filter>
+
+      <!-- Liquid Distortion for Data Flow -->
+      <filter id="liquid">
+        <feTurbulence type="turbulence" baseFrequency="0.01 0.02" numOctaves="2" result="turbulence">
+          <animate attributeName="baseFrequency" values="0.01 0.02; 0.02 0.04; 0.01 0.02" dur="8s"
+            repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="20" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+
+      <!-- Distress for 'Chaos' -->
+      <filter id="distress">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="filter-grain"></div>
+
+  <main class="scroll-container">
+
+    <!-- Title Section -->
+    <section id="sec-title" style="background-color: var(--blush);">
+      <div class="max-w-4xl mx-auto text-center z-10">
+        <p class="sans text-xs tracking-widest uppercase mb-4 reveal">Editorial Feature</p>
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight reveal delay-1 filter-blur-anim" id="main-title">
+          The Weight of the Silence
+        </h1>
+        <h2 class="text-xl md:text-2xl italic font-serif opacity-80 reveal delay-2">
+          Why We Replaced "Hope" with an AI Lifeline
+        </h2>
+      </div>
+    </section>
+
+    <!-- 1. The Introduction -->
+    <section id="sec-intro">
+      <img src="./images/scene-1 (13).jpg?q=80&w=2560&auto=format&fit=crop" class="img-cover filter-distress"
+        alt="Woman looking worried" style="filter: grayscale(100%) opacity(0.6);"> <!-- Increased opacity -->
+      <div class="gradient-overlay"></div>
+      <div class="max-w-3xl z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <h3 class="text-4xl font-bold mb-4" style="color: var(--clay);">1. The Introduction: The End of the "Guessing
+            Game"</h3>
+        </div>
+        <div class="reveal delay-1 text-lg leading-relaxed">
+          <p class="mb-6">
+            In the quiet moments after a doctor leaves the room, there is a terrifying silence. Families are left with a
+            mountain of terminology they don’t understand and a "plan" they can’t remember. This is the
+            <strong>Caregiving Gap.</strong>
+          </p>
+          <p class="border-l-4 pl-4" style="border-color: var(--sage);">
+            We didn’t build Care-Sync to experiment with "Agentic AI." We built it because "hope" is not a medical
+            strategy. We created an autonomous system to act as a digital sentry—a 24/7 advocate that listens when
+            you’re too overwhelmed to hear and remembers when you’re too tired to think.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. The Architecture -->
+    <section id="sec-arch" style="background-color: #f0f0f0;">
+      <!-- Background Abstract Network -->
+      <div class="absolute inset-0 filter-liquid opacity-30">
+        <img src="./images/scene-2 (14).jpg?q=80&w=2000&auto=format&fit=crop" class="w-full h-full object-cover"
+          alt="Abstract Network"> <!-- Placeholder for User Image 2 -->
+      </div>
+      <div class="max-w-5xl z-10 relative bg-white bg-opacity-90 p-8 md:p-12 shadow-2xl reveal">
+        <h3 class="text-3xl font-bold mb-6 text-center mono uppercase tracking-tighter" style="color: var(--dark);">2.
+          The Architecture of a Promise: The "Relay Race"</h3>
+        <div class="grid md:grid-cols-2 gap-8 text-sm sans">
+          <div class="reveal delay-1">
+            <p class="mb-4">When a life is on the line, "slow" is the same as "broken." In software, we talk about
+              <em>asynchronous processing.</em> In caregiving, we call it <strong>The Unbroken Chain.</strong>
+            </p>
+          </div>
+          <div class="reveal delay-2">
+            <p>We use a "Relay Race" architecture not for technical elegance, but for reliability. When you upload a
+              doctor’s recording, our system triggers an immediate "Starter Pistol" (Supabase Edge). We decouple the
+              processing (AWS SQS) so that even if a million families are seeking help at once, <em>your</em> mother’s
+              data is never queued, never delayed, and never lost. We scale horizontally because your family’s crisis
+              doesn't wait for server capacity.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Doctor Digest -->
+    <section id="sec-digest" style="background-color: var(--sage); color: white;">
+      <div class="max-w-4xl mx-auto z-10">
+        <h3 class="text-4xl font-bold mb-8 reveal text-shadow-sm">3. The Doctor Digest: Turning Chaos into Command</h3>
+        <div class="bg-white text-gray-800 p-8 rounded-sm shadow-lg reveal delay-1">
+          <p class="mb-4 italic opacity-70">A medical appointment is a storm of "Noise." To a stressed daughter, a
+            20-minute recording is just more weight to carry.</p>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <span class="text-2xl mr-4" style="color: var(--clay);">●</span>
+              <div>
+                <strong class="uppercase text-xs tracking-wider">The Mission:</strong>
+                <p>Our pipeline (Gemini 2.5 Flash) acts as a specialized filter. It strips away the small talk and
+                  the clinical jargon, processing audio and logic in a single multimodal pass.</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <span class="text-2xl mr-4" style="color: var(--clay);">●</span>
+              <div>
+                <strong class="uppercase text-xs tracking-wider">The Result:</strong>
+                <p>It extracts "Action Items." It turns a "chaotic transcript" into "Accountability." When the AI says
+                  <em>"Adjust dosage on Tuesday,"</em> it isn't just processing JSON—it is preventing a hospital
+                  readmission.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Med-Cabinet Scanner -->
+    <section id="sec-scanner" class="bg-gray-900 text-white relative">
+      <div class="absolute inset-0 bg-gray-900 opacity-80 z-0"></div> <!-- Separate overlay -->
+      <img src="./images/scene-3 (12).jpg?q=80&w=2000&auto=format&fit=crop" class="img-cover opacity-60"
+        alt="Phone Scanning" style="z-index: 0;"> <!-- Increased opacity, fixed z-index -->
+      <div class="scanner-line" style="z-index: 5;"></div>
+      <div class="max-w-2xl ml-auto mr-4 md:mr-20 z-10 text-right relative">
+        <h3 class="text-3xl font-bold mb-6 reveal" style="color: var(--lavender);">4. The Med-Cabinet Scanner: The
+          Shield Against the "Invisible Threat"</h3>
+        <div class="reveal delay-1 bg-black bg-opacity-60 p-6 border-r-4" style="border-color: var(--lavender);">
+          <p class="mb-4">The most dangerous place in a senior’s home is the medicine cabinet. A photo of a pill bottle
+            isn't just "pixels"; it’s a data point that could conflict with a life-saving prescription.</p>
+          <p class="text-sm mono text-gray-300">Our scanner uses "Hybrid Intelligence" (Gemini + OpenFDA) to do
+            what a tired human cannot: cross-reference every new pill against every known allergy in milliseconds. We
+            don't "guess" at drug interactions. We verify them against the global bedrock of medical truth (OpenFDA),
+            ensuring that "Agentic AI" serves as a fail-safe against human error.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Invisible Shield -->
+    <section id="sec-privacy" style="background-color: var(--clay); color: white;">
+      <div class="max-w-4xl mx-auto z-10 text-center">
+        <div class="mb-8 reveal">
+          <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+            </path>
+          </svg>
+          <h3 class="text-3xl font-bold">5. The Invisible Shield: Privacy as a Moral Imperative</h3>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 text-left">
+          <div class="bg-white bg-opacity-10 p-6 rounded reveal delay-1">
+            <h4 class="font-bold mb-2 text-white">The Vault</h4>
+            <p class="text-sm">You are trusting us with your family’s most intimate vulnerabilities. We find the idea of
+              "data mining" your health history repugnant. We use Client-Side Encryption (Web Crypto API). We don't just
+              "protect" your password; we make it so that <em>we</em> cannot see your data even if we wanted to.</p>
+          </div>
+          <div class="bg-white bg-opacity-10 p-6 rounded reveal delay-2">
+            <h4 class="font-bold mb-2 text-white">The Integrity</h4>
+            <p class="text-sm">Every file is fingerprinted (SHA256). If a single bit of your medical history is altered
+              or corrupted, the system screams. We treat your data as a sacred trust, locked in a digital vault where
+              only you hold the key.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Conclusion -->
+    <section id="sec-conclusion" style="background-color: var(--lavender);">
+      <img src="./images/scene-4 (11).jpg?q=80&w=2000&auto=format&fit=crop" class="img-cover" alt="Elderly Couple"
+        style="opacity: 0.6;">
+      <!-- Placeholder for User Image 4 -->
+      <div class="gradient-overlay"
+        style="background: linear-gradient(to top, var(--lavender) 0%, rgba(200,191,231,0.5) 100%);"></div>
+      <div class="max-w-3xl z-10 text-center p-8">
+        <h3 class="text-4xl md:text-5xl font-bold mb-6 reveal" style="color: #4a4a4a;">6. Conclusion: The Symphony of
+          Care</h3>
+        <p class="text-xl mb-8 leading-relaxed reveal delay-1">
+          For the developer, Care-Sync is a masterclass in distributed systems. But for the family, it is something else
+          entirely: <strong>Peace of Mind.</strong>
+        </p>
+        <p class="text-md mb-8 reveal delay-2">
+          We don't build pipelines to move data. We build pipelines to move the burden of care from the shoulders of the
+          family to the strength of the machine. We have turned the "black box" of AI into a transparent, secure, and
+          life-saving tool. Because when it comes to the people you love, "good enough" is never enough. The
+          architecture must be perfect.
+        </p>
+        <div class="mt-12 reveal delay-3">
+          <span
+            class="inline-block px-8 py-3 border border-gray-600 rounded-full text-xs uppercase tracking-widest">Care-Sync
+            &copy; 2024</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Vanilla JS to trigger animations on scroll
+    document.addEventListener('DOMContentLoaded', () => {
+      const observerOptions = {
+        threshold: 0.3 // Trigger when 30% of the section is visible
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+
+            // Trigger SVG blur animation for title only once
+            if (entry.target.id === 'sec-title') {
+              const anim = document.getElementById('anim-blur');
+              if (anim && anim.beginElement) anim.beginElement();
+            }
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('section').forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+
+</body>
+
+</html>
