@@ -470,8 +470,11 @@ export default function LandingPage() {
           <Link href="/educational1.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4 mr-4">
             System Architecture
           </Link>
-          <Link href="/architectural.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4">
+          <Link href="/architectural.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4 mr-4">
             Security Blueprint
+          </Link>
+          <Link href="/engineering.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4">
+            Engineering Spec
           </Link>
         </div>
       </footer>
