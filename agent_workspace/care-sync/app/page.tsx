@@ -467,8 +467,11 @@ export default function LandingPage() {
         </div>
         <p>Built with compassion. Protected by cryptography.</p>
         <div className="mt-4">
-          <Link href="/educational1.html" className="text-xs hover:text-sage-600 underline underline-offset-4">
+          <Link href="/educational1.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4 mr-4">
             System Architecture
+          </Link>
+          <Link href="/architectural.html" className="text-xs hover:text-[var(--sage-600)] underline underline-offset-4">
+            Security Blueprint
           </Link>
         </div>
       </footer>

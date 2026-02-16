@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care-Sync Security Blueprint</title>
+  <style>
+    :root {
+      --bg-dark: #050a10;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --glass-bg: rgba(15, 23, 42, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Fira Code', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* --- SVG FILTERS --- */
+    .svg-filters {
+      position: absolute;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    /* Animated Noise Background */
+    .noise-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.07;
+      filter: url(#noiseFilter);
+    }
+
+    /* Chromatic Title */
+    .chromatic-text {
+      position: relative;
+      display: inline-block;
+      filter: url(#chromaticOffset);
+    }
+
+    /* --- SCROLLYTELLING LAYOUT --- */
+    .section-container {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1000px;
+    }
+
+    /* Sticky Background Images */
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.4;
+      mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    }
+
+    /* Content Card */
+    .content-card {
+      position: relative;
+      z-index: 10;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 1px;
+      padding: 3rem;
+      max-width: 800px;
+      width: 90%;
+      margin: 4rem 0;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      border-left: 4px solid var(--accent-cyan);
+    }
+
+    .content-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Typography & Elements */
+    h1,
+    h2,
+    h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.1;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      color: var(--accent-cyan);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      color: var(--accent-blue);
+      margin-top: 2rem;
+      font-family: var(--font-mono);
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+      color: var(--text-main);
+      font-weight: 300;
+    }
+
+    ul,
+    ol {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    strong {
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Technical Tables & Lists */
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+    }
+
+    .tech-table th,
+    .tech-table td {
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      text-align: left;
+    }
+
+    .tech-table th {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+    }
+
+    .tech-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .sequence-box {
+      border-left: 2px dashed var(--border-color);
+      padding-left: 2rem;
+      margin: 2rem 0;
+    }
+
+    .sequence-step {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .sequence-step::before {
+      content: '';
+      position: absolute;
+      left: -2.35rem;
+      top: 0.4rem;
+      width: 0.75rem;
+      height: 0.75rem;
+      background: var(--bg-dark);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 50%;
+    }
+
+    /* Utility */
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: var(--accent-cyan);
+    }
+
+    .highlight-box {
+      background: rgba(6, 182, 212, 0.05);
+      padding: 1.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      margin: 2rem 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 4rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Animations */
+    @keyframes scanline {
+      0% {
+        transform: translateY(-100%);
+      }
+
+      100% {
+        transform: translateY(100%);
+      }
+    }
+
+    .scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(6, 182, 212, 0.1), transparent);
+      animation: scanline 8s linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SVG Filters Definition -->
+  <svg class="svg-filters">
+    <defs>
+      <!-- 1. Animated Noise Filter -->
+      <filter id="noiseFilter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch">
+          <animate attributeName="seed" values="0;100" dur="1s" repeatCount="indefinite" />
+        </feTurbulence>
+        <feColorMatrix type="saturate" values="0" />
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.3" />
+        </feComponentTransfer>
+      </filter>
+
+      <!-- 2. Chromatic Aberration (Shift RGB) -->
+      <filter id="chromaticOffset">
+        <feColorMatrix type="matrix" in="SourceGraphic" result="red"
+          values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" />
+        <feOffset in="red" dx="2" dy="0" result="red_offset" />
+
+        <feColorMatrix type="matrix" in="SourceGraphic" result="blue"
+          values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" />
+        <feOffset in="blue" dx="-2" dy="0" result="blue_offset" />
+
+        <feBlend mode="screen" in="red_offset" in2="blue_offset" />
+      </filter>
+
+      <!-- 3. Dynamic Motion Blur (Triggered via JS class on scroll usually, but static def here) -->
+      <filter id="motionBlur">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0,0">
+          <animate attributeName="stdDeviation" values="0,5; 0,0" dur="0.3s" begin="indefinite" />
+        </feGaussianBlur>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Noise Overlay -->
+  <div class="noise-overlay"></div>
+
+  <main>
+    <!-- SECTION 1: Intro & Governance -->
+    <section class="section-container">
+      <img src="./images/scene-1 (15).jpg" alt="Abstract Server Structure" class="bg-image">
+      <div class="scanline"></div>
+
+      <article class="content-card reveal">
+        <h1 class="chromatic-text">Architectural Integrity and Health Data Privacy Framework: The Care-Sync Security
+          Blueprint</h1>
+
+        <h2>1. Framework Governance and the Privacy-by-Design Philosophy</h2>
+        <p>In the specialized landscape of family care coordination, "Privacy-by-Design" is more than a compliance
+          mandate; it is a strategic imperative. For a Principal Security Architect, technical security is the primary
+          mechanism for establishing stakeholder trust when handling Protected Health Information (PHI). The Care-Sync
+          platform is engineered to minimize the attack surface by embedding security controls directly into the
+          architectural layers rather than treating them as an external perimeter.</p>
+
+        <p>The security philosophy synthesizes Core Platform Services with rigorous Cross-Cutting Concerns. By
+          leveraging a hybrid architecture of Next.js and Supabase, we ensure that the "secure and scalable backbone" is
+          not just a marketing claim but a technical reality. A critical advantage of the Next.js App Router is the
+          implementation of Server Components, which allows for data fetching to occur entirely on the server side. This
+          architecture prevents the exposure of sensitive API keys and business logic to the client-side environment,
+          fundamentally reducing the potential for exploitation.</p>
+
+        <div class="highlight-box">
+          <strong>The primary architectural pillars include:</strong>
+          <ul>
+            <li><strong>Frontend:</strong> Next.js Server Components for secure data fetching and Client Components for
+              controlled interactivity.</li>
+            <li><strong>Backend & Database:</strong> Supabase (PostgreSQL) providing integrated identity management, Row
+              Level Security (RLS), and managed storage.</li>
+            <li><strong>AI Orchestration:</strong> Asynchronous worker services utilizing AWS SQS for message queuing
+              and AWS Lambda/ECS for compute-intensive processing of health data.</li>
+            <li><strong>Cross-Cutting Concerns:</strong> Centralized KMS Management, Secrets Management, and continuous
+              Monitoring & Logging to ensure system-wide visibility.</li>
+          </ul>
+        </div>
+        <p>This philosophy is enforced through a transition from high-level governance to granular, database-level
+          isolation, ensuring that every byte of data is protected by rigorous access control policies.</p>
+      </article>
+    </section>
+
+    <!-- SECTION 2: RLS & Multi-Tenancy -->
+    <section class="section-container">
+      <img src="./images/scene-2 (16).jpg" alt="Network Nodes" class="bg-image">
+
+      <article class="content-card reveal">
+        <h2>2. Granular Access Control: Row Level Security (RLS) and Multi-Tenancy</h2>
+        <p>In a multi-tenant health platform, Row Level Security (RLS) is the primary defense against Insecure Direct
+          Object Reference (IDOR) vulnerabilities. Without RLS, data leakage between family groups represents an
+          existential compliance risk. By enforcing access policies at the database tier, we ensure that data isolation
+          is a property of the data itself, not just the application logic.</p>
+
+        <h3>Database Schema & RLS Enforcement Policy</h3>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Table Entity</th>
+              <th>Security Function</th>
+              <th>Access Justification</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">profiles</td>
+              <td>RLS Policy</td>
+              <td>Multi-tenant isolation: Ensures users can only view or update their specific profile linked to their
+                auth.users ID.</td>
+            </tr>
+            <tr>
+              <td class="mono">families</td>
+              <td>RLS Policy</td>
+              <td>IDOR Mitigation: Restricts access to family group metadata exclusively to authenticated members of
+                that specific family.</td>
+            </tr>
+            <tr>
+              <td class="mono">family_members</td>
+              <td>RLS Policy</td>
+              <td>RBAC Enforcement: Controls permissions (e.g., Primary Caregiver vs. Member) within the tenant to
+                prevent unauthorized administrative actions.</td>
+            </tr>
+            <tr>
+              <td class="mono">shifts</td>
+              <td>RLS Policy</td>
+              <td>Data Leakage Prevention: Ensures scheduling and care duties are never exposed to users outside the
+                designated family group.</td>
+            </tr>
+            <tr>
+              <td class="mono">feed_posts</td>
+              <td>RLS Policy</td>
+              <td>Privacy Preservation: Restricts the visibility of daily activity and health status updates to
+                verified, authenticated family members.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>A critical component of this provisioning is the <span class="mono">handle_new_user</span> PostgreSQL
+          trigger. This trigger is attached to the auth.users table; upon a new user insertion, it automatically creates
+          a corresponding entry in the profiles table with a default role. This automation is superior to manual profile
+          creation as it eliminates the risk of "orphaned" users who lack security policies, ensuring that every user is
+          immediately governed by the "least privilege" model.</p>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Cryptographic Sovereignty -->
+    <section class="section-container">
+      <img src="./images/scene-3 (14).jpg" alt="Tablet Lock" class="bg-image">
+
+      <article class="content-card reveal">
+        <h2>3. Cryptographic Sovereignty: "The Vault" and Client-Side Encryption</h2>
+        <p>For high-sensitivity documents, Care-Sync implements "The Vault," a zero-knowledge storage solution. By
+          utilizing client-side encryption, we shift the security perimeter from our servers to the user's device. This
+          ensures that even in the event of a total server-side compromise, the underlying PHI remains undecipherable.
+        </p>
+
+        <h3>The Vault Encryption/Decryption Lifecycle</h3>
+
+        <div class="sequence-box">
+          <strong>Upload Sequence</strong>
+          <div class="sequence-step">
+            1. <strong>Key Derivation:</strong> The user provides a password (which is never transmitted to or stored on
+            the server). The client-side Web Crypto API generates a unique encryption salt.
+          </div>
+          <div class="sequence-step">
+            2. <strong>PBKDF2 Stretching:</strong> A strong AES-256 GCM key is derived from the password and salt using
+            the PBKDF2 algorithm, providing high resistance to brute-force attacks.
+          </div>
+          <div class="sequence-step">
+            3. <strong>Authenticated Encryption:</strong> The file is encrypted locally. The system generates a unique
+            Initialization Vector (IV).
+          </div>
+          <div class="sequence-step">
+            4. <strong>Integrity Verification:</strong> A SHA256 checksum is calculated for the encrypted blob.
+          </div>
+          <div class="sequence-step">
+            5. <strong>Secure Transmission:</strong> The encrypted blob is uploaded to Supabase Storage. The salt, IV,
+            and checksum are stored as metadata in the vault_documents database table.
+          </div>
+        </div>
+
+        <div class="sequence-box">
+          <strong>Download Sequence</strong>
+          <div class="sequence-step">1. <strong>Retrieval:</strong> The client fetches the metadata and a time-limited
+            pre-signed URL for the encrypted file.</div>
+          <div class="sequence-step">2. <strong>Integrity Check:</strong> The client downloads the blob and verifies it
+            against the stored SHA256 checksum.</div>
+          <div class="sequence-step">3. <strong>Local Decryption:</strong> The user re-enters their password. The client
+            re-derives the AES key using the stored salt and decrypts the content locally using the IV.</div>
+        </div>
+
+        <p class="mono"
+          style="font-size: 0.8rem; opacity: 0.8; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          EVALUATION OF PROTOCOLS: The use of AES-256 GCM is a strategic choice for HIPAA compliance because it provides
+          "authenticated encryption." This means the protocol not only ensures confidentiality but also detects if the
+          data has been tampered with.
+        </p>
+      </article>
+    </section>
+
+    <!-- SECTION 4: AI Orchestration -->
+    <section class="section-container">
+      <img src="./images/scene-4 (13).jpg" alt="AI Server Data" class="bg-image">
+
+      <article class="content-card reveal">
+        <h2>4. Secure AI Orchestration and Data Ephemerality</h2>
+        <p>Integrating Agentic AI with health data requires a "Zero-Trust" approach to external APIs. We map the data
+          flow for features like "Doctor Digest" and "Med-Cabinet Scanner" to ensure that PHI is never permanently
+          stored in a raw or unencrypted state within the AI pipeline.</p>
+
+        <h3>AI Processing Pipeline (Doctor Digest & Med-Cabinet Scanner)</h3>
+        <ol>
+          <li><strong>Ingestion:</strong> Raw audio (Doctor Digest) or images (Med-Cabinet) are uploaded via pre-signed
+            URLs to private storage buckets.</li>
+          <li><strong>STT/OCR Phase:</strong> An asynchronous worker (AWS Lambda) retrieves the file, processes it
+            through Gemini 2.5 Flash or Google Cloud Vision, and stores a raw transcript/text in an encrypted, temporary
+            table.</li>
+          <li><strong>LLM Phase:</strong> A second worker sends the transcript to Gemini 2.5 Flash via an encrypted TLS
+            connection
+            for summarization or drug conflict identification.</li>
+          <li><strong>Encrypted Persistence:</strong> The structured result is encrypted using KMS-managed keys and
+            stored in the database, triggering a Realtime update to the family.</li>
+        </ol>
+
+        <div class="highlight-box">
+          <strong>Data Ephemerality and Training Policies:</strong>
+          <p>A cornerstone of this architecture is Data Ephemerality. Once the final summary or drug interaction warning
+            is generated, the platform automatically deletes raw audio files, images, and intermediate transcripts.
+            Furthermore, Care-Sync utilizes Enterprise API policies with Gemini and Google Cloud, which contractually
+            guarantee that user data is excluded from model training sets.</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- SECTION 5: Resilience & Compliance -->
+    <section class="section-container">
+      <article class="content-card reveal" style="width: 100%; max-width: 900px;">
+        <h2>5. Infrastructure Resilience and Compliance Guardrails</h2>
+        <p>System resilience is a prerequisite for security; a system that is unavailable is not secure. Our
+          architecture utilizes Dead-Letter Queues (DLQs) within the SQS pipeline to capture failed AI messages,
+          ensuring that sensitive data is not lost or mishandled during transient service failures.</p>
+
+        <p><strong>The "God Key" Risk Mitigation:</strong> The platform maintains a strict distinction between standard
+          user access and administrative tasks. While RLS governs 99% of data interactions, tasks such as Stripe webhook
+          synchronization require the Supabase Service Role Key. We treat this as a "god key" that bypasses all RLS
+          policies. Consequently, its use is restricted strictly to server-side logic (Edge Functions) and is never
+          exposed to the client-side environment.</p>
+
+        <h3>Health Data Privacy Compliance Checklist</h3>
+        <table class="tech-table" style="margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Security Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TLS/SSL (In-Transit)</td>
+              <td>Protects data against Man-in-the-Middle (MITM) attacks.</td>
+            </tr>
+            <tr>
+              <td>AES-256 (At-Rest)</td>
+              <td>Ensures disk-level encryption for all DB and Storage volumes.</td>
+            </tr>
+            <tr>
+              <td>AES-256 GCM (Vault)</td>
+              <td>Provides client-side authenticated encryption (Zero-Knowledge).</td>
+            </tr>
+            <tr>
+              <td>PBKDF2 Key Derivation</td>
+              <td>Mitigates brute-force risks for user-controlled passwords.</td>
+            </tr>
+            <tr>
+              <td>Row Level Security</td>
+              <td>Enforces multi-tenant isolation and IDOR mitigation.</td>
+            </tr>
+            <tr>
+              <td>Data Ephemerality</td>
+              <td>Minimizes risk by deleting raw media and intermediate transcripts.</td>
+            </tr>
+            <tr>
+              <td>Audit Logging</td>
+              <td>Maintains a permanent record of all data access and system changes.</td>
+            </tr>
+            <tr>
+              <td>Message Idempotency</td>
+              <td>Prevents duplicate data processing in asynchronous AI workers.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="margin-top:2rem; font-style: italic; text-align: center; color: var(--accent-cyan);">
+          This blueprint represents a high-integrity architecture where cryptographic sovereignty and database-level
+          isolation converge, ensuring Care-Sync is fully prepared for the rigorous demands of high-stakes healthcare
+          environments.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    CARE-SYNC SECURITY DIVISION /// EST. 2026
+  </footer>
+
+  <script>
+    // Vanilla JS to trigger CSS Reveal Animations on Scroll
+    document.addEventListener('DOMContentLoaded', () => {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15
+      };
+
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, observerOptions);
+
+      const elements = document.querySelectorAll('.reveal');
+      elements.forEach(el => observer.observe(el));
+    });
+  </script>
+
+</body>
+
+</html>
