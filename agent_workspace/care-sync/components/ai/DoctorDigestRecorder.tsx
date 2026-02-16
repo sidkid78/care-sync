@@ -15,9 +15,9 @@ interface DigestResult {
 }
 
 const PRIORITY_COLORS = {
-  high: 'bg-red-100 text-red-800 border-red-200',
-  medium: 'bg-amber-100 text-amber-800 border-amber-200',
-  low: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  high: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+  medium: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
+  low: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
 } as const;
 
 export default function DoctorDigestRecorder({ familyId }: { familyId: string }) {
@@ -165,12 +165,12 @@ export default function DoctorDigestRecorder({ familyId }: { familyId: string })
       {result && (
         <div className="space-y-3">
           {/* Summary */}
-          <div className="p-3 bg-[var(--sage-50)] rounded-lg border border-[var(--sage-200)]">
+          <div className="p-3 bg-[var(--sage-50)] dark:bg-[var(--sage-900)]/40 rounded-lg border border-[var(--sage-200)] dark:border-[var(--sage-800)]">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-4 h-4 text-[var(--sage-600)]" />
-              <span className="text-xs font-semibold text-[var(--sage-700)] uppercase tracking-wide">Summary</span>
+              <CheckCircle2 className="w-4 h-4 text-[var(--sage-600)] dark:text-[var(--sage-400)]" />
+              <span className="text-xs font-semibold text-[var(--sage-700)] dark:text-[var(--sage-300)] uppercase tracking-wide">Summary</span>
             </div>
-            <p className="text-sm text-[var(--clay-700)] leading-relaxed">{result.summary}</p>
+            <p className="text-sm text-[var(--clay-700)] dark:text-[var(--clay-200)] leading-relaxed">{result.summary}</p>
           </div>
 
           {/* Action Items */}
@@ -178,7 +178,7 @@ export default function DoctorDigestRecorder({ familyId }: { familyId: string })
             <div>
               <button
                 onClick={() => setShowActions(!showActions)}
-                className="flex items-center gap-1 text-xs font-semibold text-[var(--clay-500)] uppercase tracking-wide mb-2 hover:text-[var(--clay-700)]"
+                className="flex items-center gap-1 text-xs font-semibold text-[var(--clay-500)] dark:text-[var(--clay-400)] uppercase tracking-wide mb-2 hover:text-[var(--clay-700)] dark:hover:text-[var(--clay-200)]"
               >
                 Action Items ({result.action_items.length})
                 {showActions ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}

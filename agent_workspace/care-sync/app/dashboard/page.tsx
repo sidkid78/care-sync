@@ -117,90 +117,106 @@ export default function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/login'); return; }
 
-    // Profile
-    const { data: prof } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    setProfile(prof);
-
-    // If success=true and status is still free, poll for update
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true' && prof?.subscription_status === 'free') {
-      // Simple polling mechanism
-      let attempts = 0;
-      const maxAttempts = 10;
-      const interval = setInterval(async () => {
-        attempts++;
-        const { data: updatedProf } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (updatedProf?.subscription_status === 'premium') {
-          setProfile(updatedProf);
-          clearInterval(interval);
-          // Remove query param to clean URL
-          router.replace('/dashboard');
-        } else if (attempts >= maxAttempts) {
-          clearInterval(interval);
-        }
-      }, 2000); // Check every 2 seconds
-
-      return () => clearInterval(interval);
-    }
-
-    // Family membership
-    const { data: membership } = await supabase
-      .from('family_members')
-      .select('family_id, role_in_family, families(id, name, invite_code)')
-      .eq('profile_id', user.id)
-      .limit(1)
-      .single();
-
-    if (!membership?.families) {
-      router.push('/onboarding');
-      return;
-    }
-
-    const fam = membership.families as unknown as Family;
-    setFamily(fam);
-
-    // Parallel queries
-    const [membersRes, shiftsRes, feedRes, consultRes] = await Promise.all([
-      supabase
-        .from('family_members')
-        .select('profile_id, role_in_family, profiles(full_name, avatar_url)')
-        .eq('family_id', fam.id),
-      supabase
-        .from('shifts')
-        .select('*, profiles:assigned_to_user_id(full_name)')
-        .eq('family_id', fam.id)
-        .gte('start_time', startOfWeek(new Date()).toISOString())
-        .lte('start_time', addDays(startOfWeek(new Date()), 7).toISOString())
-        .order('start_time', { ascending: true }),
-      supabase
-        .from('feed_posts')
-        .select('*, profiles(full_name, avatar_url)')
-        .eq('family_id', fam.id)
-        .order('created_at', { ascending: false })
-        .limit(20),
-      supabase
-        .from('medical_consultations')
+    try {
+      // Profile
+      const { data: prof, error: profError } = await supabase
+        .from('profiles')
         .select('*')
-        .eq('family_id', fam.id)
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ]);
+        .eq('id', user.id)
+        .single();
 
-    setMembers((membersRes.data as unknown as FamilyMember[]) || []);
-    setShifts((shiftsRes.data as Shift[]) || []);
-    setFeed((feedRes.data as unknown as FeedPost[]) || []);
-    setConsultations((consultRes.data as Consultation[]) || []);
-    setLoading(false);
+      if (profError) console.error('Profile fetch error:', profError);
+      setProfile(prof);
+
+      // If success=true and status is still free, poll for update
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('success') === 'true' && prof?.subscription_status === 'free') {
+        // Simple polling mechanism
+        let attempts = 0;
+        const maxAttempts = 10;
+        const interval = setInterval(async () => {
+          attempts++;
+          const { data: updatedProf } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (updatedProf?.subscription_status === 'premium') {
+            setProfile(updatedProf);
+            clearInterval(interval);
+            // Remove query param to clean URL
+            router.replace('/dashboard');
+          } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+          }
+        }, 2000); // Check every 2 seconds
+
+        // Don't return cleanup here, as it kills the interval immediately on unmount of effect? 
+        // Actually it's fine as long as we aren't unmounting.
+        // But for safety in this refactor, I'll keep the logic simple.
+      }
+
+      // Family membership
+      const { data: membership, error: memberError } = await supabase
+        .from('family_members')
+        .select('family_id, role_in_family, families(id, name, invite_code)')
+        .eq('profile_id', user.id)
+        .limit(1)
+        .single();
+
+      if (memberError && memberError.code !== 'PGRST116') {
+        console.error('Membership fetch error:', memberError);
+      }
+
+      if (!membership?.families) {
+        // Only redirect if explicitly not found and not an API error
+        // But if it IS an error, we might just show empty state instead of infinite load
+        if (!memberError) router.push('/onboarding');
+      } else {
+        const fam = membership.families as unknown as Family;
+        setFamily(fam);
+
+        // Parallel queries
+        const [membersRes, shiftsRes, feedRes, consultRes] = await Promise.all([
+          supabase
+            .from('family_members')
+            .select('profile_id, role_in_family, profiles(full_name, avatar_url)')
+            .eq('family_id', fam.id),
+          supabase
+            .from('shifts')
+            .select('*, profiles:assigned_to_user_id(full_name)')
+            .eq('family_id', fam.id)
+            .gte('start_time', startOfWeek(new Date()).toISOString())
+            .lte('start_time', addDays(startOfWeek(new Date()), 7).toISOString())
+            .order('start_time', { ascending: true }),
+          supabase
+            .from('feed_posts')
+            .select('*, profiles(full_name, avatar_url)')
+            .eq('family_id', fam.id)
+            .order('created_at', { ascending: false })
+            .limit(20),
+          supabase
+            .from('medical_consultations')
+            .select('*')
+            .eq('family_id', fam.id)
+            .order('created_at', { ascending: false })
+            .limit(5),
+        ]);
+
+        if (membersRes.error) console.error('Members fetch error:', membersRes.error);
+        if (shiftsRes.error) console.error('Shifts fetch error:', shiftsRes.error);
+
+        setMembers((membersRes.data as unknown as FamilyMember[]) || []);
+        setShifts((shiftsRes.data as Shift[]) || []);
+        setFeed((feedRes.data as unknown as FeedPost[]) || []);
+        setConsultations((consultRes.data as Consultation[]) || []);
+      }
+    } catch (err) {
+      console.error('Dashboard loadData unexpected error:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [supabase, router]);
 
   useEffect(() => {
@@ -464,28 +480,28 @@ export default function DashboardPage() {
             {/* Recent Consultations */}
             {consultations.length > 0 && (
               <section>
-                <h2 className="text-sm font-semibold text-[var(--clay-700)] flex items-center gap-2 mb-3">
+                <h2 className="text-sm font-semibold text-[var(--clay-700)] dark:text-[var(--clay-400)] flex items-center gap-2 mb-3">
                   <Mic className="w-4 h-4" /> Recent Digests
                 </h2>
                 <div className="grid gap-2">
                   {consultations.map((c) => (
-                    <div key={c.id} className="card-warm p-4 space-y-2">
+                    <div key={c.id} className="card-warm p-4 space-y-2 dark:bg-[var(--clay-100)] dark:border-[var(--clay-200)]">
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
                           }`}>
                           {c.status}
                         </span>
-                        <span className="text-xs text-[var(--clay-400)]">{format(new Date(c.created_at), 'MMM d, h:mm a')}</span>
+                        <span className="text-xs text-[var(--clay-400)] dark:text-[var(--clay-500)]">{format(new Date(c.created_at), 'MMM d, h:mm a')}</span>
                       </div>
-                      {c.summary && <p className="text-sm text-[var(--clay-700)]">{c.summary}</p>}
+                      {c.summary && <p className="text-sm text-[var(--clay-700)] dark:text-gray-300">{c.summary}</p>}
                       {c.action_items?.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {c.action_items.map((a, i) => (
                             <span
                               key={i}
-                              className={`text-xs px-2 py-0.5 rounded-md border ${a.priority === 'high' ? 'bg-red-50 border-red-200 text-red-700' :
-                                a.priority === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                                  'bg-emerald-50 border-emerald-200 text-emerald-700'
+                              className={`text-xs px-2 py-0.5 rounded-md border ${a.priority === 'high' ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-300' :
+                                a.priority === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-300' :
+                                  'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300'
                                 }`}
                             >
                               {a.task}
@@ -501,7 +517,7 @@ export default function DashboardPage() {
 
             {/* Family Feed */}
             <section>
-              <h2 className="text-sm font-semibold text-[var(--clay-700)] flex items-center gap-2 mb-3">
+              <h2 className="text-sm font-semibold text-[var(--clay-700)] dark:text-[var(--clay-400)] flex items-center gap-2 mb-3">
                 <MessageSquare className="w-4 h-4" /> Family Feed
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" title="Live" />
               </h2>
@@ -513,7 +529,7 @@ export default function DashboardPage() {
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
                   placeholder="Share an update with your family…"
-                  className="flex-1 px-4 py-2.5 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-100)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] transition-all placeholder:text-[var(--clay-300)]"
+                  className="flex-1 px-4 py-2.5 border border-[var(--clay-200)] rounded-xl text-sm bg-white dark:bg-[var(--clay-100)] dark:border-[var(--clay-200)] dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-300)] transition-all placeholder:text-[var(--clay-300)] dark:placeholder:text-[var(--clay-500)]"
                 />
                 <button
                   type="submit"
@@ -532,15 +548,15 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   {feed.map((p) => (
                     <div key={p.id} className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--lav-200)] flex items-center justify-center shrink-0 text-xs font-semibold text-[var(--lav-700)]">
+                      <div className="w-8 h-8 rounded-full bg-[var(--lav-200)] dark:bg-[var(--lav-900)] flex items-center justify-center shrink-0 text-xs font-semibold text-[var(--lav-700)] dark:text-[var(--lav-200)]">
                         {(p.profiles?.full_name || '?')[0]}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-medium text-[var(--clay-800)]">{p.profiles?.full_name || 'Unknown'}</span>
-                          <span className="text-xs text-[var(--clay-400)]">{format(new Date(p.created_at), 'h:mm a')}</span>
+                          <span className="text-sm font-medium text-[var(--clay-800)] dark:text-gray-200">{p.profiles?.full_name || 'Unknown'}</span>
+                          <span className="text-xs text-[var(--clay-400)] dark:text-gray-500">{format(new Date(p.created_at), 'h:mm a')}</span>
                         </div>
-                        <p className="text-sm text-[var(--clay-600)] mt-0.5">{p.content}</p>
+                        <p className="text-sm text-[var(--clay-600)] dark:text-gray-400 mt-0.5">{p.content}</p>
                       </div>
                     </div>
                   ))}
